@@ -1,0 +1,582 @@
+[
+  {
+    "Name": "Aarya PS",
+    "Team": "SWE",
+    "TL": "Ecosmob",
+    "Code": "Kamailio",
+    "Capacity": 1.0,
+    "Contract": "FT",
+    "StartDate": "2026-01-26",
+    "EndDate": ""
+  },
+  {
+    "Name": "Amit Kumar Singh",
+    "Team": "SWE",
+    "TL": "Surya",
+    "Code": "Kamailio",
+    "Capacity": 1.0,
+    "Contract": "FT",
+    "StartDate": "",
+    "EndDate": ""
+  },
+  {
+    "Name": "Antonios Pagiavlas",
+    "Team": "SWE",
+    "TL": "Johanna",
+    "Code": "Kamailio",
+    "Capacity": 1.0,
+    "Contract": "FT",
+    "StartDate": "",
+    "EndDate": ""
+  },
+  {
+    "Name": "Benedikt Vollmerhaus",
+    "Team": "SWE",
+    "TL": "Johanna",
+    "Code": "Python",
+    "Capacity": 0.5,
+    "Contract": "4 days/ week",
+    "StartDate": "",
+    "EndDate": ""
+  },
+  {
+    "Name": "Damir Franusic",
+    "Team": "SWE",
+    "TL": "Johanna",
+    "Code": "Kamailio",
+    "Capacity": 0.0,
+    "Contract": "FT",
+    "StartDate": "2026-02-02",
+    "EndDate": ""
+  },
+  {
+    "Name": "devang.dhandhalya",
+    "Team": "SWE",
+    "TL": "Ecosmob",
+    "Code": "Kamailio",
+    "Capacity": 1.0,
+    "Contract": "FT",
+    "StartDate": "2026-01-01",
+    "EndDate": ""
+  },
+  {
+    "Name": "Erhan Sendag",
+    "Team": "SWE",
+    "TL": "Surya",
+    "Code": "Kamailio",
+    "Capacity": 1.0,
+    "Contract": "FT",
+    "StartDate": "",
+    "EndDate": ""
+  },
+  {
+    "Name": "mehrnaz.hasani",
+    "Team": "SWE",
+    "TL": "Johanna",
+    "Code": "Python",
+    "Capacity": 1.0,
+    "Contract": "FT",
+    "StartDate": "",
+    "EndDate": ""
+  },
+  {
+    "Name": "Milos Savanovic",
+    "Team": "SWE",
+    "TL": "Surya",
+    "Code": "Kamailio",
+    "Capacity": 0.0,
+    "Contract": "FT",
+    "StartDate": "",
+    "EndDate": ""
+  },
+  {
+    "Name": "Rinkal Koshti",
+    "Team": "SWE",
+    "TL": "Ecosmob",
+    "Code": "Kamailio",
+    "Capacity": 1.0,
+    "Contract": "FT",
+    "StartDate": "",
+    "EndDate": ""
+  },
+  {
+    "Name": "Shrudal",
+    "Team": "SWE",
+    "TL": "Surya",
+    "Code": "Kamailio",
+    "Capacity": 1.0,
+    "Contract": "FT",
+    "StartDate": "2026-05-01",
+    "EndDate": ""
+  },
+  {
+    "Name": "Tayyaba Azam",
+    "Team": "SWE",
+    "TL": "Johanna",
+    "Code": "Kamailio",
+    "Capacity": 1.0,
+    "Contract": "FT",
+    "StartDate": "",
+    "EndDate": ""
+  },
+  {
+    "Name": "Vinayak Makwana",
+    "Team": "SWE",
+    "TL": "Ecosmob",
+    "Code": "Kamailio",
+    "Capacity": 1.0,
+    "Contract": "FT",
+    "StartDate": "",
+    "EndDate": ""
+  },
+  {
+    "Name": "Luca Priorelli",
+    "Team": "SWE",
+    "TL": "Johanna",
+    "Code": "Python",
+    "Capacity": 1.0,
+    "Contract": "FT",
+    "StartDate": "2026-05-01",
+    "EndDate": ""
+  },
+  {
+    "Name": "Zhou Long",
+    "Team": "SWE",
+    "TL": "Surya",
+    "Code": "Kamailio",
+    "Capacity": 1.0,
+    "Contract": "FT",
+    "StartDate": "2025-12-01",
+    "EndDate": ""
+  },
+  {
+    "Name": "Ahad",
+    "Team": "SWE",
+    "TL": "Johanna",
+    "Code": "Python",
+    "Capacity": 1.0,
+    "Contract": "FT",
+    "StartDate": "2026-04-01",
+    "EndDate": ""
+  },
+  {
+    "Name": "uzair.khan",
+    "Team": "SWE",
+    "TL": "Johanna",
+    "Code": "Kamailio",
+    "Capacity": 1.0,
+    "Contract": "FT",
+    "StartDate": "2026-02-16",
+    "EndDate": ""
+  },
+  {
+    "Name": "Haseeb Shujja",
+    "Team": "SWE",
+    "TL": "Surya",
+    "Code": "Kamailio",
+    "Capacity": 1.0,
+    "Contract": "FT",
+    "StartDate": "",
+    "EndDate": ""
+  },
+  {
+    "Name": "Benedikt Vollmerhaus",
+    "Team": "SWE",
+    "TL": "Johanna",
+    "Code": "Go",
+    "Capacity": 0.5,
+    "Contract": "4 days/ week",
+    "StartDate": "",
+    "EndDate": ""
+  },
+  {
+    "Name": "Sara Nasir",
+    "Team": "SWE",
+    "TL": "Johanna",
+    "Code": "Go",
+    "Capacity": 1.0,
+    "Contract": "FT",
+    "StartDate": "",
+    "EndDate": ""
+  },
+  {
+    "Name": "Ibrahim Shahzad",
+    "Team": "SWA",
+    "TL": "Nik",
+    "Code": "Go",
+    "Capacity": 0.5,
+    "Contract": "FT",
+    "StartDate": "",
+    "EndDate": ""
+  },
+  {
+    "Name": "Prudvi raj Baddela",
+    "Team": "SWE",
+    "TL": "Johanna",
+    "Code": "Go",
+    "Capacity": 1.0,
+    "Contract": "FT",
+    "StartDate": "",
+    "EndDate": ""
+  },
+  {
+    "Name": "Rick Barenthin",
+    "Team": "SWA",
+    "TL": "Nik",
+    "Code": "Go",
+    "Capacity": 0.5,
+    "Contract": "FT",
+    "StartDate": "",
+    "EndDate": ""
+  },
+  {
+    "Name": "Matthias Br\u00e4uer",
+    "Team": "SWA",
+    "TL": "SWA",
+    "Code": "Go",
+    "Capacity": 1.0,
+    "Contract": "4 days/ week",
+    "StartDate": "",
+    "EndDate": ""
+  },
+  {
+    "Name": "hanna.hanna",
+    "Team": "Cloud",
+    "TL": "Hamid",
+    "Code": "cloud",
+    "Capacity": 0.5,
+    "Contract": "FT",
+    "StartDate": "",
+    "EndDate": ""
+  },
+  {
+    "Name": "Open Position",
+    "Team": "QA",
+    "TL": "Development",
+    "Code": "QA",
+    "Capacity": 1.0,
+    "Contract": "FT",
+    "StartDate": "",
+    "EndDate": ""
+  },
+  {
+    "Name": "Salman",
+    "Team": "Load",
+    "TL": "Load",
+    "Code": "Load",
+    "Capacity": 1.0,
+    "Contract": "FT",
+    "StartDate": "",
+    "EndDate": ""
+  },
+  {
+    "Name": "Andrii Pogrebennyk",
+    "Team": "SWA",
+    "TL": "SWA",
+    "Code": "Kamailio",
+    "Capacity": 1.0,
+    "Contract": "FT",
+    "StartDate": "",
+    "EndDate": ""
+  },
+  {
+    "Name": "Primoz",
+    "Team": "SWA",
+    "TL": "SWA",
+    "Code": "Kamailio",
+    "Capacity": 1.0,
+    "Contract": "FT",
+    "StartDate": "2026-04-01",
+    "EndDate": ""
+  },
+  {
+    "Name": "Tiago",
+    "Team": "SWA",
+    "TL": "SWA",
+    "Code": "Kamailio",
+    "Capacity": 1.0,
+    "Contract": "FT",
+    "StartDate": "2026-08-01",
+    "EndDate": ""
+  },
+  {
+    "Name": "Ibrahim Shahzad",
+    "Team": "Fix",
+    "TL": "Fix",
+    "Code": "Kamailio",
+    "Capacity": 0.5,
+    "Contract": "FT",
+    "StartDate": "",
+    "EndDate": ""
+  },
+  {
+    "Name": "Mujeeb Tahir",
+    "Team": "Fix",
+    "TL": "Fix",
+    "Code": "Kamailio",
+    "Capacity": 1.0,
+    "Contract": "FT",
+    "StartDate": "",
+    "EndDate": ""
+  },
+  {
+    "Name": "Rick Barenthin",
+    "Team": "Fix",
+    "TL": "Fix",
+    "Code": "Kamailio",
+    "Capacity": 0.5,
+    "Contract": "FT",
+    "StartDate": "",
+    "EndDate": ""
+  },
+  {
+    "Name": "Prakash Periyasamy",
+    "Team": "Fix",
+    "TL": "Fix",
+    "Code": "Kamailio",
+    "Capacity": 1.0,
+    "Contract": "FT",
+    "StartDate": "2026-07-13",
+    "EndDate": ""
+  },
+  {
+    "Name": "Sebastian Aldea",
+    "Team": "Fix",
+    "TL": "Fix",
+    "Code": "Kamailio",
+    "Capacity": 1.0,
+    "Contract": "FT",
+    "StartDate": "",
+    "EndDate": ""
+  },
+  {
+    "Name": "Damir Franusic",
+    "Team": "Fix",
+    "TL": "Fix",
+    "Code": "Kamailio",
+    "Capacity": 1.0,
+    "Contract": "FT",
+    "StartDate": "",
+    "EndDate": ""
+  },
+  {
+    "Name": "Milos Savanovic",
+    "Team": "Fix",
+    "TL": "Fix",
+    "Code": "Kamailio",
+    "Capacity": 1.0,
+    "Contract": "FT",
+    "StartDate": "",
+    "EndDate": ""
+  },
+  {
+    "Name": "Akhila Rachel Oommen",
+    "Team": "QA",
+    "TL": "Stability",
+    "Code": "QA",
+    "Capacity": 1.0,
+    "Contract": "FT",
+    "StartDate": "2025-12-01",
+    "EndDate": ""
+  },
+  {
+    "Name": "Sushma Manoor",
+    "Team": "QA",
+    "TL": "Stability",
+    "Code": "QA",
+    "Capacity": 1.0,
+    "Contract": "FT",
+    "StartDate": "",
+    "EndDate": ""
+  },
+  {
+    "Name": "Jyothi",
+    "Team": "QA",
+    "TL": "Stability",
+    "Code": "QA",
+    "Capacity": 1.0,
+    "Contract": "FT",
+    "StartDate": "",
+    "EndDate": ""
+  },
+  {
+    "Name": "Junaid Ahmad Chaudhry",
+    "Team": "QA",
+    "TL": "Development",
+    "Code": "QA",
+    "Capacity": 0.0,
+    "Contract": "FT",
+    "StartDate": "",
+    "EndDate": ""
+  },
+  {
+    "Name": "Qamar Abbas",
+    "Team": "QA",
+    "TL": "Development",
+    "Code": "QA",
+    "Capacity": 1.0,
+    "Contract": "FT",
+    "StartDate": "",
+    "EndDate": ""
+  },
+  {
+    "Name": "Wisha Zehra",
+    "Team": "QA",
+    "TL": "Development",
+    "Code": "QA",
+    "Capacity": 1.0,
+    "Contract": "FT",
+    "StartDate": "2025-11-01",
+    "EndDate": ""
+  },
+  {
+    "Name": "Aditya Nisal",
+    "Team": "QA",
+    "TL": "Development",
+    "Code": "QA",
+    "Capacity": 1.0,
+    "Contract": "FT",
+    "StartDate": "2026-03-03",
+    "EndDate": ""
+  },
+  {
+    "Name": "Saqib",
+    "Team": "QA",
+    "TL": "Development",
+    "Code": "QA",
+    "Capacity": 1.0,
+    "Contract": "FT",
+    "StartDate": "2026-03-16",
+    "EndDate": ""
+  },
+  {
+    "Name": "Suraj",
+    "Team": "QA",
+    "TL": "Development",
+    "Code": "QA",
+    "Capacity": 1.0,
+    "Contract": "FT",
+    "StartDate": "2026-06-22",
+    "EndDate": ""
+  },
+  {
+    "Name": "Open Position",
+    "Team": "QA",
+    "TL": "Development",
+    "Code": "QA",
+    "Capacity": 1.0,
+    "Contract": "FT",
+    "StartDate": "",
+    "EndDate": ""
+  },
+  {
+    "Name": "Danish Bhatti",
+    "Team": "Load",
+    "TL": "Load",
+    "Code": "Load",
+    "Capacity": 1.0,
+    "Contract": "FT",
+    "StartDate": "",
+    "EndDate": ""
+  },
+  {
+    "Name": "Hariharan Dhanapal",
+    "Team": "Load",
+    "TL": "Load",
+    "Code": "Load",
+    "Capacity": 1.0,
+    "Contract": "FT",
+    "StartDate": "",
+    "EndDate": ""
+  },
+  {
+    "Name": "Sai Charan / Zeal Trivedi",
+    "Team": "Load",
+    "TL": "Load",
+    "Code": "Load",
+    "Capacity": 1.0,
+    "Contract": "FT",
+    "StartDate": "2026-03-01",
+    "EndDate": ""
+  },
+  {
+    "Name": "Salman Khalid",
+    "Team": "Load",
+    "TL": "Load",
+    "Code": "Load",
+    "Capacity": 1.0,
+    "Contract": "FT",
+    "StartDate": "2026-04-01",
+    "EndDate": ""
+  },
+  {
+    "Name": "Abin Thomas",
+    "Team": "Cloud",
+    "TL": "Cloud",
+    "Code": "cloud",
+    "Capacity": 1.0,
+    "Contract": "FT",
+    "StartDate": "",
+    "EndDate": ""
+  },
+  {
+    "Name": "hanna.hanna",
+    "Team": "Cloud",
+    "TL": "Cloud",
+    "Code": "cloud",
+    "Capacity": 0.5,
+    "Contract": "FT",
+    "StartDate": "",
+    "EndDate": ""
+  },
+  {
+    "Name": "Muneer Syed",
+    "Team": "Cloud",
+    "TL": "Cloud",
+    "Code": "cloud",
+    "Capacity": 1.0,
+    "Contract": "FT",
+    "StartDate": "",
+    "EndDate": ""
+  },
+  {
+    "Name": "Saman Jalilian",
+    "Team": "Cloud",
+    "TL": "Cloud",
+    "Code": "cloud",
+    "Capacity": 1.0,
+    "Contract": "FT",
+    "StartDate": "",
+    "EndDate": ""
+  },
+  {
+    "Name": "Milinda",
+    "Team": "Cloud",
+    "TL": "Cloud",
+    "Code": "cloud",
+    "Capacity": 1.0,
+    "Contract": "4.5 days/week",
+    "StartDate": "2026-02-25",
+    "EndDate": ""
+  },
+  {
+    "Name": "Tavleen",
+    "Team": "Cloud",
+    "TL": "Cloud",
+    "Code": "cloud",
+    "Capacity": 1.0,
+    "Contract": "FT",
+    "StartDate": "2026-05-01",
+    "EndDate": ""
+  },
+  {
+    "Name": "Saeed Mulla",
+    "Team": "Cloud",
+    "TL": "Cloud",
+    "Code": "cloud",
+    "Capacity": 1.0,
+    "Contract": "FT",
+    "StartDate": "2026-03-02",
+    "EndDate": ""
+  }
+]

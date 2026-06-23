@@ -1,6 +1,3 @@
-# AI_Planning
-AI planning tool
-
 # Resource Capacity Planning — H2 Replan
 
 A board-ready Streamlit application that forecasts team working-day capacity for
