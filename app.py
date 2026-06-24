@@ -77,10 +77,14 @@ MONTH_LABELS = [m[1] for m in MONTHS]
 MONTH_NUMS = {m[1]: m[2] for m in MONTHS}
 
 # Defaults for the global sidebar controls.
-DEFAULT_MAX_DAYS = 15.5      # baseline maximum working days per person / month
-DEFAULT_SICKNESS = 0.5       # sickness allowance deducted per month
-DEFAULT_HOLIDAY = 2.0        # standard holiday baseline deduction per month
-DEFAULT_ADMIN_SC = 1.0       # admin / Strategy & Culture days per month
+# IMPORTANT: Max Working Days (15.5) is treated as the NET productive baseline —
+# it already accounts for standard sickness, holiday and admin/S&C time. The
+# three allowance sliders therefore default to 0 and only apply *additional*
+# deductions on top if you choose to set them.
+DEFAULT_MAX_DAYS = 15.5      # NET baseline working days per person / month
+DEFAULT_SICKNESS = 0.0       # optional EXTRA sickness deduction per month
+DEFAULT_HOLIDAY = 0.0        # optional EXTRA holiday deduction per month
+DEFAULT_ADMIN_SC = 0.0       # optional EXTRA admin / S&C deduction per month
 
 # Ramp-up schedule from the start date: month 1 = 30%, month 2 = 70%,
 # month 3 and beyond = 100% of designated capacity.
@@ -114,6 +118,15 @@ HOLIDAY_COLUMNS = ["Name", "Month", "Days", "Note"]
 
 TEAM_WS = "Team"          # worksheet holding employee profiles
 HOLIDAY_WS = "Holidays"   # worksheet holding the absence log
+
+# Durable local store (used as a fallback AND a cache when Google Sheets is not
+# configured). Override the location with the CAPACITY_DATA_DIR env var. Saved
+# values are reloaded automatically when the app is reopened.
+LOCAL_DATA_DIR = os.environ.get(
+    "CAPACITY_DATA_DIR",
+    os.path.join(os.path.dirname(os.path.abspath(__file__)), "data"))
+LOCAL_TEAM_FILE = os.path.join(LOCAL_DATA_DIR, "team.csv")
+LOCAL_HOLIDAY_FILE = os.path.join(LOCAL_DATA_DIR, "holidays.csv")
 
 KNOWN_TEAMS = ["SWE", "SWA", "Cloud", "QA", "Load", "Fix"]
 KNOWN_CONTRACTS = ["FT", "4.5 Days", "4 Days", "Contractor", "Part-Time"]
@@ -188,24 +201,48 @@ def _coerce_holiday_df(df: pd.DataFrame) -> pd.DataFrame:
     return df.reset_index(drop=True)
 
 
+def _local_save(df: pd.DataFrame, path: str) -> bool:
+    """Write a dataframe to a local CSV (creates the folder if needed)."""
+    try:
+        os.makedirs(os.path.dirname(path), exist_ok=True)
+        df.to_csv(path, index=False)
+        return True
+    except Exception:
+        return False
+
+
+def _local_load(path: str) -> Optional[pd.DataFrame]:
+    """Read a local CSV if it exists, else None. Strings kept verbatim."""
+    try:
+        if os.path.exists(path):
+            return pd.read_csv(path, dtype=str, keep_default_na=False)
+    except Exception:
+        pass
+    return None
+
+
 def load_team_df() -> pd.DataFrame:
-    """Read the roster from Google Sheets, falling back to the session store."""
+    """Read the roster. Priority: Google Sheets -> local saved file -> seed."""
     conn = _get_connection()
     if conn is not None:
         try:
             df = conn.read(worksheet=TEAM_WS, ttl=0)
-            st.session_state["backend"] = "gsheets"
+            st.session_state["backend"] = "Google Sheets"
             return _coerce_team_df(df.dropna(how="all"))
         except Exception as exc:  # worksheet missing or auth issue
-            st.session_state["backend"] = "session"
             st.session_state["backend_error"] = str(exc)
-    if "team_df" not in st.session_state:
-        st.session_state["team_df"] = _seed_team_df()
-    st.session_state.setdefault("backend", "session")
-    return _coerce_team_df(st.session_state["team_df"])
+    # Durable local store — this is what makes "save and reopen" work without
+    # Google Sheets. Falls back to the bundled seed only on the very first run.
+    local = _local_load(LOCAL_TEAM_FILE)
+    if local is not None:
+        st.session_state["backend"] = "local file"
+        return _coerce_team_df(local)
+    st.session_state["backend"] = "local file"
+    return _seed_team_df()
 
 
 def load_holiday_df() -> pd.DataFrame:
+    """Read absences. Priority: Google Sheets -> local saved file -> empty."""
     conn = _get_connection()
     if conn is not None:
         try:
@@ -213,13 +250,14 @@ def load_holiday_df() -> pd.DataFrame:
             return _coerce_holiday_df(df.dropna(how="all"))
         except Exception:
             pass
-    if "holiday_df" not in st.session_state:
-        st.session_state["holiday_df"] = _empty_holiday_df()
-    return _coerce_holiday_df(st.session_state["holiday_df"])
+    local = _local_load(LOCAL_HOLIDAY_FILE)
+    if local is not None:
+        return _coerce_holiday_df(local)
+    return _empty_holiday_df()
 
 
 def save_team_df(df: pd.DataFrame) -> None:
-    """Persist the roster. Writes to Google Sheets when connected."""
+    """Persist the roster to Google Sheets (if connected) AND the local file."""
     df = _coerce_team_df(df)
     conn = _get_connection()
     if conn is not None:
@@ -227,11 +265,13 @@ def save_team_df(df: pd.DataFrame) -> None:
             conn.update(worksheet=TEAM_WS, data=df)
         except Exception as exc:
             st.warning(f"Could not write to Google Sheets ({exc}). "
-                       "Changes are kept for this session only.")
+                       "Saved to the local file instead.")
+    _local_save(df, LOCAL_TEAM_FILE)        # always keep a durable local copy
     st.session_state["team_df"] = df
 
 
 def save_holiday_df(df: pd.DataFrame) -> None:
+    """Persist absences to Google Sheets (if connected) AND the local file."""
     df = _coerce_holiday_df(df)
     conn = _get_connection()
     if conn is not None:
@@ -239,7 +279,8 @@ def save_holiday_df(df: pd.DataFrame) -> None:
             conn.update(worksheet=HOLIDAY_WS, data=df)
         except Exception as exc:
             st.warning(f"Could not write holidays to Google Sheets ({exc}). "
-                       "Changes are kept for this session only.")
+                       "Saved to the local file instead.")
+    _local_save(df, LOCAL_HOLIDAY_FILE)
     st.session_state["holiday_df"] = df
 
 
@@ -310,17 +351,18 @@ def month_available_days(row: pd.Series, year: int, month: int,
     if end is not None and end < dt.date(year, month, 1):
         return 0.0
 
-    # Contract type scales this person's baseline working days FIRST
-    # (e.g. FT = 15.5, 4.5-day week = 90%, 4-day week = 80% of Max Days),
-    # then the global per-month allowances are deducted.
+    # Contract type scales this person's NET baseline working days:
+    #   FT = 15.5, 4.5-day week = 90% (13.95 ≈ 14), 4-day week = 80% (12.4).
+    # Max Working Days already accounts for standard sickness/holiday/admin, so
+    # the allowance sliders (default 0) only subtract ADDITIONAL time if set.
     cf = contract_factor(row.get("Contract"))
-    person_max = max_days * cf
-    baseline = person_max - sickness - holiday_allow - admin_sc
-    baseline = max(baseline, 0.0)
+    person_max = max_days * cf - sickness - holiday_allow - admin_sc
+    person_max = max(person_max, 0.0)
     # Individual capacity % and the new-starter ramp factor then apply.
-    available = baseline * capacity * rf
+    available = person_max * capacity * rf
     available -= max(logged_absence, 0.0)
-    return round(max(available, 0.0), 2)
+    # Round to 1 dp so figures read cleanly (e.g. 4.5-day week = 14.0).
+    return round(max(available, 0.0), 1)
 
 
 def absence_lookup(holidays: pd.DataFrame) -> dict:
@@ -500,21 +542,27 @@ with st.sidebar:
     forecast_year = st.number_input("Forecast year", min_value=2020,
                                     max_value=2100, value=2026, step=1)
 
-    max_days = st.slider("Max working days / month", 0.0, 23.0,
+    max_days = st.slider("Max working days / month (net)", 0.0, 23.0,
                          DEFAULT_MAX_DAYS, 0.5,
-                         help="Baseline maximum working days per person per month.")
-    sickness = st.slider("Sickness allowance / month", 0.0, 10.0,
+                         help="NET productive working days for a full-time "
+                              "person — already accounts for standard "
+                              "sickness/holiday/admin. A 4-day week = 80% of "
+                              "this (12.4), a 4.5-day week = 90% (≈14).")
+    st.caption("Optional extra deductions (leave at 0 — the baseline above is "
+               "already net of standard sickness/holiday/admin):")
+    sickness = st.slider("Extra sickness days / month", 0.0, 10.0,
                          DEFAULT_SICKNESS, 0.5,
-                         help="Deducted from each person's monthly days.")
-    holiday_allow = st.slider("Holiday allowance / month", 0.0, 15.0,
+                         help="Additional sickness time beyond the net baseline.")
+    holiday_allow = st.slider("Extra holiday days / month", 0.0, 15.0,
                               DEFAULT_HOLIDAY, 0.5,
-                              help="Standard baseline holiday deduction per month.")
-    admin_sc = st.slider("Admin / S&C days / month", 0.0, 10.0,
+                              help="Additional holiday beyond the net baseline.")
+    admin_sc = st.slider("Extra admin / S&C days / month", 0.0, 10.0,
                          DEFAULT_ADMIN_SC, 0.5,
-                         help="Strategy & Culture / admin time deducted per month.")
+                         help="Additional admin / Strategy & Culture time.")
 
     net_per_month = max(max_days - sickness - holiday_allow - admin_sc, 0.0)
-    st.metric("Net productive days / month (FT, 100%)", f"{net_per_month:.1f}")
+    st.metric("Net days / month — FT 100%", f"{net_per_month:.1f}")
+    st.caption("4.5-day week ≈ 14.0 · 4-day week = 12.4")
 
     st.divider()
     st.subheader("📉 Alerts")
@@ -526,14 +574,13 @@ with st.sidebar:
 
     st.divider()
     # Persistence status indicator.
-    if not _GSHEETS_IMPORTED:
-        st.warning("`st-gsheets-connection` not installed — running on the "
-                   "in-session store. See the README to enable Google Sheets.")
-    elif _get_connection() is None:
-        st.warning("Google Sheets not configured — using the in-session store. "
-                   "Add credentials to `.streamlit/secrets.toml`.")
+    if _GSHEETS_IMPORTED and _get_connection() is not None:
+        st.success("Saving to Google Sheets ✔ (also cached locally)")
     else:
-        st.success("Connected to Google Sheets ✔")
+        st.info("Saving to a local file — your saved values reload when you "
+                "reopen the app. Add Google Sheets credentials to "
+                "`.streamlit/secrets.toml` for shared/cloud storage.")
+    st.caption(f"Local data file: `{LOCAL_TEAM_FILE}`")
 
 # ---- Load persisted data (baseline that the editors start from) ----------
 base_team = load_team_df()
