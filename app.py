@@ -82,8 +82,31 @@ DEFAULT_SICKNESS = 0.5       # sickness allowance deducted per month
 DEFAULT_HOLIDAY = 2.0        # standard holiday baseline deduction per month
 DEFAULT_ADMIN_SC = 1.0       # admin / Strategy & Culture days per month
 
-# Ramp-up schedule: month 1 / 2 / 3 from the start date.
-RAMP_SCHEDULE = {1: 0.33, 2: 0.66, 3: 1.00}
+# Ramp-up schedule from the start date: month 1 = 30%, month 2 = 70%,
+# month 3 and beyond = 100% of designated capacity.
+RAMP_SCHEDULE = {1: 0.30, 2: 0.70, 3: 1.00}
+
+# Contract type -> baseline working-day multiplier. Applied to Max Working Days
+# for that person BEFORE any other calculation (deductions, capacity, ramp).
+#   FT (Full-Time)  -> 100% of baseline days
+#   4.5 Days/week   ->  90%
+#   4 Days/week     ->  80%
+CONTRACT_FACTORS = {"FT": 1.00, "4.5 Days": 0.90, "4 Days": 0.80}
+
+
+def contract_factor(contract) -> float:
+    """Map a (possibly free-text) contract type to its baseline multiplier.
+
+    Handles the canonical options and the legacy spellings found in
+    Teams.xlsx ("4 days/ week", "4.5 days/week"). Unknown / full-time-like
+    values default to 1.0.
+    """
+    s = str(contract).strip().lower()
+    if "4.5" in s:                       # 4.5 day week -> 90%
+        return 0.90
+    if s.startswith("4") or "4 day" in s or "4days" in s:  # 4 day week -> 80%
+        return 0.80
+    return 1.00                          # FT / full-time / contractor / blank
 
 TEAM_COLUMNS = ["Name", "Team", "TL", "Code", "Capacity",
                 "Contract", "StartDate", "EndDate"]
@@ -93,7 +116,7 @@ TEAM_WS = "Team"          # worksheet holding employee profiles
 HOLIDAY_WS = "Holidays"   # worksheet holding the absence log
 
 KNOWN_TEAMS = ["SWE", "SWA", "Cloud", "QA", "Load", "Fix"]
-KNOWN_CONTRACTS = ["FT", "Contractor", "4 days/ week", "4.5 days/week", "Part-Time"]
+KNOWN_CONTRACTS = ["FT", "4.5 Days", "4 Days", "Contractor", "Part-Time"]
 
 
 # ---------------------------------------------------------------------------
@@ -131,7 +154,25 @@ def _coerce_team_df(df: pd.DataFrame) -> pd.DataFrame:
     df["Capacity"] = pd.to_numeric(df["Capacity"], errors="coerce").fillna(1.0)
     for c in ["Name", "Team", "TL", "Code", "Contract", "StartDate", "EndDate"]:
         df[c] = df[c].astype(str).replace({"nan": "", "NaT": "", "None": ""}).str.strip()
+    # Normalise contract spellings to the canonical labels so the editor's
+    # dropdown renders them (calculations accept either form regardless).
+    df["Contract"] = df["Contract"].map(_canonical_contract)
     return df.reset_index(drop=True)
+
+
+def _canonical_contract(value: str) -> str:
+    """Map any contract spelling to a canonical label used by the dropdown."""
+    s = str(value).strip()
+    if s == "":
+        return "FT"
+    low = s.lower()
+    if "4.5" in low:
+        return "4.5 Days"
+    if low.startswith("4") or "4 day" in low or "4days" in low:
+        return "4 Days"
+    if low in ("ft", "full-time", "full time", "fulltime"):
+        return "FT"
+    return s  # keep custom values (e.g. Contractor, Part-Time) as-is
 
 
 def _coerce_holiday_df(df: pd.DataFrame) -> pd.DataFrame:
@@ -269,8 +310,14 @@ def month_available_days(row: pd.Series, year: int, month: int,
     if end is not None and end < dt.date(year, month, 1):
         return 0.0
 
-    baseline = max_days - sickness - holiday_allow - admin_sc
+    # Contract type scales this person's baseline working days FIRST
+    # (e.g. FT = 15.5, 4.5-day week = 90%, 4-day week = 80% of Max Days),
+    # then the global per-month allowances are deducted.
+    cf = contract_factor(row.get("Contract"))
+    person_max = max_days * cf
+    baseline = person_max - sickness - holiday_allow - admin_sc
     baseline = max(baseline, 0.0)
+    # Individual capacity % and the new-starter ramp factor then apply.
     available = baseline * capacity * rf
     available -= max(logged_absence, 0.0)
     return round(max(available, 0.0), 2)
@@ -467,7 +514,15 @@ with st.sidebar:
                          help="Strategy & Culture / admin time deducted per month.")
 
     net_per_month = max(max_days - sickness - holiday_allow - admin_sc, 0.0)
-    st.metric("Net productive days / month (100%)", f"{net_per_month:.1f}")
+    st.metric("Net productive days / month (FT, 100%)", f"{net_per_month:.1f}")
+
+    st.divider()
+    st.subheader("📉 Alerts")
+    anomaly_threshold = st.slider(
+        "Low-capacity alert threshold", 5, 50, 15, 1,
+        format="%d%%",
+        help="Flag any team whose total available days drop by more than this "
+             "percentage versus the previous month.") / 100.0
 
     st.divider()
     # Persistence status indicator.
@@ -500,6 +555,66 @@ m1.metric("Total available days (H2)", f"{total_days:,.1f}")
 m2.metric("People contributing", people_contributing)
 m3.metric("Teams", team_count)
 m4.metric("Avg days / person", f"{avg_per_person:,.1f}")
+
+# ---- Per-month breakdown -------------------------------------------------
+# Total days, active headcount (>0 days) and average days/person per month.
+if not matrix.empty:
+    monthly_total = matrix[MONTH_LABELS].sum()
+    monthly_people = (matrix[MONTH_LABELS] > 0).sum()
+    monthly_avg = (monthly_total / monthly_people.replace(0, pd.NA)).fillna(0.0)
+
+    st.markdown("##### Monthly breakdown (July → December)")
+    cols = st.columns(len(MONTH_LABELS))
+    prev_total = None
+    for i, label in enumerate(MONTH_LABELS):
+        tot = float(monthly_total[label])
+        ppl = int(monthly_people[label])
+        avg = float(monthly_avg[label])
+        # Delta vs the previous month makes month-over-month shifts visible.
+        delta = None if prev_total is None else f"{tot - prev_total:+.1f} d"
+        cols[i].metric(label, f"{tot:,.1f} d", delta=delta)
+        cols[i].caption(f"👥 {ppl} people · ⌀ {avg:.1f} d/person")
+        prev_total = tot
+
+    # Detailed table for the board pack.
+    breakdown = pd.DataFrame({
+        "Total available days": monthly_total.round(1),
+        "People contributing": monthly_people.astype(int),
+        "Avg days / person": monthly_avg.round(1),
+    })
+    with st.expander("📋 Monthly breakdown — detailed table"):
+        st.dataframe(breakdown, use_container_width=True)
+
+# ---- Executive insight: low-capacity / anomaly alerts --------------------
+st.markdown("##### 🔎 Executive insight — capacity alerts")
+if matrix.empty:
+    st.info("Add team members to generate capacity alerts.")
+else:
+    # Month-over-month change in total available days, per team.
+    team_month = matrix.groupby("Team")[MONTH_LABELS].sum()
+    alerts = []  # (severity, message)
+    for team, series in team_month.iterrows():
+        for j in range(1, len(MONTH_LABELS)):
+            prev_lbl, cur_lbl = MONTH_LABELS[j - 1], MONTH_LABELS[j]
+            prev, cur = float(series[prev_lbl]), float(series[cur_lbl])
+            if prev <= 0:
+                continue
+            drop = (prev - cur) / prev          # positive = a decline
+            if drop > anomaly_threshold:
+                sev = "error" if drop >= 0.25 else "warning"
+                alerts.append((
+                    sev,
+                    f"**{team}** — capacity down **{drop * 100:.0f}%** in "
+                    f"{cur_lbl} (from {prev:.1f} to {cur:.1f} days vs "
+                    f"{prev_lbl}). Likely clustered holidays, contract endings "
+                    f"or new-starter ramp-up."))
+    if not alerts:
+        st.success(f"No teams drop more than {anomaly_threshold * 100:.0f}% "
+                   "month-over-month. Capacity looks stable across H2.")
+    else:
+        # Errors (severe drops) first, then warnings.
+        for sev, msg in sorted(alerts, key=lambda a: a[0]):
+            (st.error if sev == "error" else st.warning)(msg)
 
 st.divider()
 
@@ -574,7 +689,9 @@ with tab_team:
                 "Capacity", help="1.0 = 100%, 0.5 = 50%, 0 = not contributing",
                 min_value=0.0, max_value=2.0, step=0.05, format="%.2f"),
             "Team": st.column_config.TextColumn("Team"),
-            "Contract": st.column_config.TextColumn("Contract"),
+            "Contract": st.column_config.SelectboxColumn(
+                "Contract", help="FT = 100% days, 4.5 Days = 90%, 4 Days = 80%",
+                options=KNOWN_CONTRACTS, required=False),
             "StartDate": st.column_config.TextColumn(
                 "StartDate", help="YYYY-MM-DD"),
             "EndDate": st.column_config.TextColumn(
@@ -656,7 +773,7 @@ with tab_forecast:
     if matrix.empty:
         st.info("No team members yet — add some on the Team & Capacity tab.")
     else:
-        show_cols = ["Name", "Team", "Capacity"] + MONTH_LABELS
+        show_cols = ["Name", "Team", "Contract", "Capacity"] + MONTH_LABELS
         st.dataframe(
             matrix[show_cols],
             use_container_width=True, hide_index=True,
