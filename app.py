@@ -535,87 +535,14 @@ with st.sidebar:
     else:
         st.success("Connected to Google Sheets ✔")
 
-# ---- Load data -----------------------------------------------------------
-team_df = load_team_df()
-holiday_df = load_holiday_df()
+# ---- Load persisted data (baseline that the editors start from) ----------
+base_team = load_team_df()
+base_hol = load_holiday_df()
 
-# Build the live forecast matrix used across all tabs.
-matrix = build_matrix(team_df, holiday_df, int(forecast_year), max_days,
-                      sickness, holiday_allow, admin_sc)
-
-# ---- Headline metrics ----------------------------------------------------
-total_days = float(matrix[MONTH_LABELS].sum().sum()) if not matrix.empty else 0.0
-people_contributing = int(
-    (matrix[MONTH_LABELS].sum(axis=1) > 0).sum()) if not matrix.empty else 0
-team_count = matrix["Team"].nunique() if not matrix.empty else 0
-avg_per_person = (total_days / people_contributing) if people_contributing else 0.0
-
-m1, m2, m3, m4 = st.columns(4)
-m1.metric("Total available days (H2)", f"{total_days:,.1f}")
-m2.metric("People contributing", people_contributing)
-m3.metric("Teams", team_count)
-m4.metric("Avg days / person", f"{avg_per_person:,.1f}")
-
-# ---- Per-month breakdown -------------------------------------------------
-# Total days, active headcount (>0 days) and average days/person per month.
-if not matrix.empty:
-    monthly_total = matrix[MONTH_LABELS].sum()
-    monthly_people = (matrix[MONTH_LABELS] > 0).sum()
-    monthly_avg = (monthly_total / monthly_people.replace(0, pd.NA)).fillna(0.0)
-
-    st.markdown("##### Monthly breakdown (July → December)")
-    cols = st.columns(len(MONTH_LABELS))
-    prev_total = None
-    for i, label in enumerate(MONTH_LABELS):
-        tot = float(monthly_total[label])
-        ppl = int(monthly_people[label])
-        avg = float(monthly_avg[label])
-        # Delta vs the previous month makes month-over-month shifts visible.
-        delta = None if prev_total is None else f"{tot - prev_total:+.1f} d"
-        cols[i].metric(label, f"{tot:,.1f} d", delta=delta)
-        cols[i].caption(f"👥 {ppl} people · ⌀ {avg:.1f} d/person")
-        prev_total = tot
-
-    # Detailed table for the board pack.
-    breakdown = pd.DataFrame({
-        "Total available days": monthly_total.round(1),
-        "People contributing": monthly_people.astype(int),
-        "Avg days / person": monthly_avg.round(1),
-    })
-    with st.expander("📋 Monthly breakdown — detailed table"):
-        st.dataframe(breakdown, use_container_width=True)
-
-# ---- Executive insight: low-capacity / anomaly alerts --------------------
-st.markdown("##### 🔎 Executive insight — capacity alerts")
-if matrix.empty:
-    st.info("Add team members to generate capacity alerts.")
-else:
-    # Month-over-month change in total available days, per team.
-    team_month = matrix.groupby("Team")[MONTH_LABELS].sum()
-    alerts = []  # (severity, message)
-    for team, series in team_month.iterrows():
-        for j in range(1, len(MONTH_LABELS)):
-            prev_lbl, cur_lbl = MONTH_LABELS[j - 1], MONTH_LABELS[j]
-            prev, cur = float(series[prev_lbl]), float(series[cur_lbl])
-            if prev <= 0:
-                continue
-            drop = (prev - cur) / prev          # positive = a decline
-            if drop > anomaly_threshold:
-                sev = "error" if drop >= 0.25 else "warning"
-                alerts.append((
-                    sev,
-                    f"**{team}** — capacity down **{drop * 100:.0f}%** in "
-                    f"{cur_lbl} (from {prev:.1f} to {cur:.1f} days vs "
-                    f"{prev_lbl}). Likely clustered holidays, contract endings "
-                    f"or new-starter ramp-up."))
-    if not alerts:
-        st.success(f"No teams drop more than {anomaly_threshold * 100:.0f}% "
-                   "month-over-month. Capacity looks stable across H2.")
-    else:
-        # Errors (severe drops) first, then warnings.
-        for sev, msg in sorted(alerts, key=lambda a: a[0]):
-            (st.error if sev == "error" else st.warning)(msg)
-
+# The dashboard is rendered HERE visually, but filled in LATER — after the
+# roster/absence editors have run — so it always reflects the current edits
+# live, without needing a save first.
+dashboard_area = st.container()
 st.divider()
 
 tab_team, tab_hol, tab_forecast = st.tabs(
@@ -628,7 +555,7 @@ with tab_team:
     st.subheader("Add a team member")
 
     team_options = sorted(set(KNOWN_TEAMS) |
-                          set([t for t in team_df["Team"].unique() if t]))
+                          set([t for t in base_team["Team"].unique() if t]))
 
     with st.form("add_member", clear_on_submit=True):
         c1, c2, c3 = st.columns(3)
@@ -670,7 +597,7 @@ with tab_team:
                     "EndDate": end_date.strftime("%Y-%m-%d") if end_date else "",
                 }
                 updated = pd.concat(
-                    [team_df, pd.DataFrame([new_row])], ignore_index=True)
+                    [base_team, pd.DataFrame([new_row])], ignore_index=True)
                 save_team_df(updated)              # instant write-back
                 st.success(f"Added {name.strip()} to {final_team}.")
                 st.rerun()
@@ -680,7 +607,7 @@ with tab_team:
                "then click **Save roster**.")
 
     edited = st.data_editor(
-        team_df,
+        base_team,
         num_rows="dynamic",
         use_container_width=True,
         key="roster_editor",
@@ -698,11 +625,20 @@ with tab_team:
                 "EndDate", help="YYYY-MM-DD or blank for open-ended"),
         },
     )
+    # The edited grid is the LIVE source of truth — every other view
+    # (metrics, forecast, export, alerts) is recomputed from it on each rerun,
+    # so changes appear immediately without needing to save first.
+    team_df = _coerce_team_df(edited)
+
     cbtn1, cbtn2 = st.columns([1, 5])
     if cbtn1.button("💾 Save roster", type="primary"):
-        save_team_df(edited)
-        st.success("Roster saved.")
+        save_team_df(team_df)
+        st.success("Roster saved to the backend.")
         st.rerun()
+    # Flag edits that are live in the UI but not yet persisted.
+    if not team_df.reset_index(drop=True).equals(base_team.reset_index(drop=True)):
+        cbtn2.info("Unsaved edits — the forecast below already reflects them. "
+                   "Click **Save roster** to persist to Google Sheets.")
 
 # =========================================================================
 # TAB 2 — Holidays & Absence
@@ -732,14 +668,14 @@ with tab_hol:
                 new_h = {"Name": h_name, "Month": h_month,
                          "Days": float(h_days), "Note": h_note.strip()}
                 updated_h = pd.concat(
-                    [holiday_df, pd.DataFrame([new_h])], ignore_index=True)
+                    [base_hol, pd.DataFrame([new_h])], ignore_index=True)
                 save_holiday_df(updated_h)         # instant write-back
                 st.success(f"Logged {h_days} day(s) for {h_name} in {h_month}.")
                 st.rerun()
 
     st.subheader("Absence log")
     edited_h = st.data_editor(
-        holiday_df,
+        base_hol,
         num_rows="dynamic",
         use_container_width=True,
         key="holiday_editor",
@@ -750,9 +686,11 @@ with tab_hol:
                 "Days", min_value=0.0, max_value=31.0, step=0.5, format="%.1f"),
         },
     )
+    # Live absence log — feeds the forecast deductions immediately.
+    holiday_df = _coerce_holiday_df(edited_h)
     if st.button("💾 Save absences", type="primary"):
-        save_holiday_df(edited_h)
-        st.success("Absences saved.")
+        save_holiday_df(holiday_df)
+        st.success("Absences saved to the backend.")
         st.rerun()
 
     if not holiday_df.empty:
@@ -760,6 +698,85 @@ with tab_hol:
         pivot = (holiday_df.groupby("Month")["Days"].sum()
                  .reindex(MONTH_LABELS).fillna(0.0))
         st.bar_chart(pivot)
+
+# =========================================================================
+# Build the live forecast matrix from the CURRENT editor state, then fill
+# the dashboard placeholder defined near the top of the page.
+# =========================================================================
+matrix = build_matrix(team_df, holiday_df, int(forecast_year), max_days,
+                      sickness, holiday_allow, admin_sc)
+
+with dashboard_area:
+    total_days = float(matrix[MONTH_LABELS].sum().sum()) if not matrix.empty else 0.0
+    # Headcount counts each unique person once, even if split across rows.
+    contributing_names = (
+        matrix.loc[matrix[MONTH_LABELS].sum(axis=1) > 0, "Name"].nunique()
+        if not matrix.empty else 0)
+    team_count = matrix["Team"].nunique() if not matrix.empty else 0
+    avg_per_person = (total_days / contributing_names) if contributing_names else 0.0
+
+    k1, k2, k3, k4 = st.columns(4)
+    k1.metric("Total available days (H2)", f"{total_days:,.1f}")
+    k2.metric("People contributing", contributing_names)
+    k3.metric("Teams", team_count)
+    k4.metric("Avg days / person", f"{avg_per_person:,.1f}")
+
+    if not matrix.empty:
+        monthly_total = matrix[MONTH_LABELS].sum()
+        # Active headcount per month = unique names with >0 days that month.
+        monthly_people = pd.Series(
+            {lbl: matrix.loc[matrix[lbl] > 0, "Name"].nunique()
+             for lbl in MONTH_LABELS})
+        monthly_avg = (monthly_total /
+                       monthly_people.replace(0, pd.NA)).fillna(0.0)
+
+        st.markdown("##### Monthly breakdown (July → December)")
+        cols = st.columns(len(MONTH_LABELS))
+        prev_total = None
+        for i, label in enumerate(MONTH_LABELS):
+            tot = float(monthly_total[label])
+            ppl = int(monthly_people[label])
+            avg = float(monthly_avg[label])
+            delta = None if prev_total is None else f"{tot - prev_total:+.1f} d"
+            cols[i].metric(label, f"{tot:,.1f} d", delta=delta)
+            cols[i].caption(f"👥 {ppl} people · ⌀ {avg:.1f} d/person")
+            prev_total = tot
+
+        breakdown = pd.DataFrame({
+            "Total available days": monthly_total.round(1),
+            "People contributing": monthly_people.astype(int),
+            "Avg days / person": monthly_avg.round(1),
+        })
+        with st.expander("📋 Monthly breakdown — detailed table"):
+            st.dataframe(breakdown, use_container_width=True)
+
+    st.markdown("##### 🔎 Executive insight — capacity alerts")
+    if matrix.empty:
+        st.info("Add team members to generate capacity alerts.")
+    else:
+        team_month = matrix.groupby("Team")[MONTH_LABELS].sum()
+        alerts = []
+        for team, series in team_month.iterrows():
+            for j in range(1, len(MONTH_LABELS)):
+                prev_lbl, cur_lbl = MONTH_LABELS[j - 1], MONTH_LABELS[j]
+                prev, cur = float(series[prev_lbl]), float(series[cur_lbl])
+                if prev <= 0:
+                    continue
+                drop = (prev - cur) / prev
+                if drop > anomaly_threshold:
+                    sev = "error" if drop >= 0.25 else "warning"
+                    alerts.append((
+                        sev,
+                        f"**{team}** — capacity down **{drop * 100:.0f}%** in "
+                        f"{cur_lbl} (from {prev:.1f} to {cur:.1f} days vs "
+                        f"{prev_lbl}). Likely clustered holidays, contract "
+                        f"endings or new-starter ramp-up."))
+        if not alerts:
+            st.success(f"No teams drop more than {anomaly_threshold * 100:.0f}% "
+                       "month-over-month. Capacity looks stable across H2.")
+        else:
+            for sev, msg in sorted(alerts, key=lambda a: a[0]):
+                (st.error if sev == "error" else st.warning)(msg)
 
 # =========================================================================
 # TAB 3 — Forecast & Export
