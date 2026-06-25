@@ -62,6 +62,9 @@ except Exception:  # pragma: no cover - import guard
 # ---------------------------------------------------------------------------
 
 APP_TITLE = "Resource Capacity Planning · H2 Replan"
+# Bump this whenever the app changes — it is shown in the sidebar so you can
+# confirm at a glance which build is actually deployed.
+APP_VERSION = "v5 · company colours · 2026-06-25"
 
 # Forecast months. (Excel column letter, label, calendar month number).
 # Columns I..N on the Replan H2 tab == July..December.
@@ -76,15 +79,14 @@ MONTHS = [
 MONTH_LABELS = [m[1] for m in MONTHS]
 MONTH_NUMS = {m[1]: m[2] for m in MONTHS}
 
-# Defaults for the global sidebar controls.
-# IMPORTANT: Max Working Days (15.5) is treated as the NET productive baseline —
-# it already accounts for standard sickness, holiday and admin/S&C time. The
-# three allowance sliders therefore default to 0 and only apply *additional*
-# deductions on top if you choose to set them.
-DEFAULT_MAX_DAYS = 15.5      # NET baseline working days per person / month
-DEFAULT_SICKNESS = 0.0       # optional EXTRA sickness deduction per month
-DEFAULT_HOLIDAY = 0.0        # optional EXTRA holiday deduction per month
-DEFAULT_ADMIN_SC = 0.0       # optional EXTRA admin / S&C deduction per month
+# Defaults for the global sidebar controls. Working days per month defaults to
+# the calendar figure (21). The three allowance sliders default to 0 — these
+# are set by the user ("upper level"), not pre-filled. With them at 0, planable
+# days = 21; set them to 1 / 2.5 / 2 to get the standard 15.5 planable baseline.
+DEFAULT_MAX_DAYS = 21.0      # GROSS working days per person / month
+DEFAULT_SICKNESS = 0.0       # sickness allowance / month  (user sets this)
+DEFAULT_HOLIDAY = 0.0        # holiday allowance / month   (user sets this)
+DEFAULT_ADMIN_SC = 0.0       # admin / Strategy & Culture days / month (user sets)
 
 # Ramp-up schedule from the start date: month 1 = 30%, month 2 = 70%,
 # month 3 and beyond = 100% of designated capacity.
@@ -130,6 +132,22 @@ LOCAL_HOLIDAY_FILE = os.path.join(LOCAL_DATA_DIR, "holidays.csv")
 
 KNOWN_TEAMS = ["SWE", "SWA", "Cloud", "QA", "Load", "Fix"]
 KNOWN_CONTRACTS = ["FT", "4.5 Days", "4 Days", "Contractor", "Part-Time"]
+
+# Company palette (sampled from the brand swatches). Used for charts and the
+# Excel export so the whole tool is on-brand.
+BRAND_NAVY = "#183E87"
+BRAND_BLUE = "#2E68F9"
+BRAND_SKY = "#4BACEB"
+BRAND_ORANGE = "#E47632"
+BRAND_GRAYS = ["#8D8D8D", "#ABABAB", "#C4C4C4", "#DEDEDE"]
+# Ordered series palette for team charts (cycles if there are >6 teams).
+TEAM_PALETTE = [BRAND_NAVY, BRAND_BLUE, BRAND_SKY, BRAND_ORANGE,
+                BRAND_GRAYS[0], BRAND_GRAYS[1]]
+
+
+def _series_colors(n: int) -> list:
+    """Return n brand colors for chart series, cycling the palette if needed."""
+    return [TEAM_PALETTE[i % len(TEAM_PALETTE)] for i in range(n)]
 
 
 # ---------------------------------------------------------------------------
@@ -351,15 +369,14 @@ def month_available_days(row: pd.Series, year: int, month: int,
     if end is not None and end < dt.date(year, month, 1):
         return 0.0
 
-    # Contract type scales this person's NET baseline working days:
-    #   FT = 15.5, 4.5-day week = 90% (13.95 ≈ 14), 4-day week = 80% (12.4).
-    # Max Working Days already accounts for standard sickness/holiday/admin, so
-    # the allowance sliders (default 0) only subtract ADDITIONAL time if set.
+    # Planable (net) days = GROSS working days minus the standard allowances.
+    #   e.g. 21 - 1 (sick) - 2.5 (holiday) - 2 (admin) = 15.5 planable days.
+    planable = max_days - sickness - holiday_allow - admin_sc
+    planable = max(planable, 0.0)
+    # Contract pattern is a proportion of planable (5d = 15.5, 4.5d = 0.9 ≈ 14,
+    # 4d = 0.8 = 12.4), then individual capacity % and the ramp factor apply.
     cf = contract_factor(row.get("Contract"))
-    person_max = max_days * cf - sickness - holiday_allow - admin_sc
-    person_max = max(person_max, 0.0)
-    # Individual capacity % and the new-starter ramp factor then apply.
-    available = person_max * capacity * rf
+    available = planable * cf * capacity * rf
     available -= max(logged_absence, 0.0)
     # Round to 1 dp so figures read cleanly (e.g. 4.5-day week = 14.0).
     return round(max(available, 0.0), 1)
@@ -418,10 +435,10 @@ def build_excel(matrix: pd.DataFrame, year: int) -> bytes:
     ws.append(header)
 
     # ---- styling helpers -------------------------------------------------
-    head_fill = PatternFill("solid", start_color="1F3864")
+    head_fill = PatternFill("solid", start_color="183E87")   # brand navy
     head_font = Font(name="Arial", bold=True, color="FFFFFF", size=11)
-    total_fill = PatternFill("solid", start_color="D9E1F2")
-    count_fill = PatternFill("solid", start_color="EDEDED")
+    total_fill = PatternFill("solid", start_color="D6E4FB")  # brand blue tint
+    count_fill = PatternFill("solid", start_color="EFEFEF")  # brand light gray
     bold = Font(name="Arial", bold=True, size=10)
     base_font = Font(name="Arial", size=10)
     centre = Alignment(horizontal="center")
@@ -519,13 +536,32 @@ def build_excel(matrix: pd.DataFrame, year: int) -> bytes:
 
 st.set_page_config(page_title=APP_TITLE, page_icon="📊", layout="wide")
 
-# Lightweight styling for a clean, board-ready feel.
+# Company-branded styling for a clean, board-ready feel.
+# Palette: navy #183E87 · bright blue #2E68F9 · sky #4BACEB · orange #E47632.
 st.markdown(
     """
     <style>
-      .block-container {padding-top: 2.2rem;}
-      [data-testid="stMetricValue"] {font-size: 1.6rem;}
-      h1, h2, h3 {color: #1F3864;}
+      .block-container {padding-top: 2.0rem;}
+      h1, h2, h3, h4, h5 {color: #183E87;}
+      /* KPI tiles: light surface with a brand-blue accent edge */
+      [data-testid="stMetric"] {
+          background: #F7F9FC;
+          border: 1px solid #E3E8F2;
+          border-left: 4px solid #2E68F9;
+          border-radius: 10px;
+          padding: 12px 16px;
+      }
+      [data-testid="stMetricValue"] {font-size: 1.6rem; color: #183E87;}
+      [data-testid="stMetricLabel"] {color: #5A6B85;}
+      /* Primary buttons in brand blue with navy hover */
+      .stButton > button[kind="primary"] {
+          background-color: #2E68F9; border: none;
+      }
+      .stButton > button[kind="primary"]:hover {background-color: #183E87;}
+      /* Tab underline + active label in brand colors */
+      .stTabs [aria-selected="true"] {color: #183E87;}
+      /* Title accent rule */
+      h1 {border-bottom: 3px solid #E47632; padding-bottom: .25rem;}
     </style>
     """,
     unsafe_allow_html=True,
@@ -538,31 +574,35 @@ st.caption("H2 Replan · July–December working-day forecast — aligned to the
 # ---- Sidebar: global controls -------------------------------------------
 with st.sidebar:
     st.header("⚙️ Global controls")
+    st.caption(f"Build: {APP_VERSION}")
 
     forecast_year = st.number_input("Forecast year", min_value=2020,
                                     max_value=2100, value=2026, step=1)
 
-    max_days = st.slider("Max working days / month (net)", 0.0, 23.0,
+    max_days = st.slider("Working days / month (gross)", 0.0, 23.0,
                          DEFAULT_MAX_DAYS, 0.5,
-                         help="NET productive working days for a full-time "
-                              "person — already accounts for standard "
-                              "sickness/holiday/admin. A 4-day week = 80% of "
-                              "this (12.4), a 4.5-day week = 90% (≈14).")
-    st.caption("Optional extra deductions (leave at 0 — the baseline above is "
-               "already net of standard sickness/holiday/admin):")
-    sickness = st.slider("Extra sickness days / month", 0.0, 10.0,
-                         DEFAULT_SICKNESS, 0.5,
-                         help="Additional sickness time beyond the net baseline.")
-    holiday_allow = st.slider("Extra holiday days / month", 0.0, 15.0,
-                              DEFAULT_HOLIDAY, 0.5,
-                              help="Additional holiday beyond the net baseline.")
-    admin_sc = st.slider("Extra admin / S&C days / month", 0.0, 10.0,
-                         DEFAULT_ADMIN_SC, 0.5,
-                         help="Additional admin / Strategy & Culture time.")
+                         help="Gross calendar working days per month, before "
+                              "allowances. Subtracting the three allowances "
+                              "below gives 'Planable days'.")
+    sickness = st.slider("Sickness allowance / month", 0.0, 10.0,
+                         DEFAULT_SICKNESS, 0.5)
+    holiday_allow = st.slider("Holiday allowance / month", 0.0, 15.0,
+                              DEFAULT_HOLIDAY, 0.5)
+    admin_sc = st.slider("Admin / S&C days / month", 0.0, 10.0,
+                         DEFAULT_ADMIN_SC, 0.5)
 
-    net_per_month = max(max_days - sickness - holiday_allow - admin_sc, 0.0)
-    st.metric("Net days / month — FT 100%", f"{net_per_month:.1f}")
-    st.caption("4.5-day week ≈ 14.0 · 4-day week = 12.4")
+    planable = max(max_days - sickness - holiday_allow - admin_sc, 0.0)
+    st.metric("Planable days / month (FT)", f"{planable:.1f}")
+    # Derived per-contract totals — mirrors rows 6–9 of the assumptions block.
+    assumptions = pd.DataFrame({
+        "Days/month": [
+            round(planable, 1),
+            round(planable * 1.0, 1),
+            round(planable * 0.9, 1),
+            round(planable * 0.8, 1),
+        ]},
+        index=["Planable days", "5 days/week", "4.5 days/week", "4 days/week"])
+    st.dataframe(assumptions, use_container_width=True)
 
     st.divider()
     st.subheader("📉 Alerts")
@@ -744,7 +784,7 @@ with tab_hol:
         st.subheader("Absence days by month")
         pivot = (holiday_df.groupby("Month")["Days"].sum()
                  .reindex(MONTH_LABELS).fillna(0.0))
-        st.bar_chart(pivot)
+        st.bar_chart(pivot, color=BRAND_BLUE)
 
 # =========================================================================
 # Build the live forecast matrix from the CURRENT editor state, then fill
@@ -848,7 +888,7 @@ with tab_forecast:
         st.subheader("Total available capacity by team / month")
         team_month = (matrix.groupby("Team")[MONTH_LABELS].sum()
                       .T.reindex(MONTH_LABELS))
-        st.bar_chart(team_month)
+        st.bar_chart(team_month, color=_series_colors(team_month.shape[1]))
 
         # Per-team totals table.
         st.subheader("Team totals (days)")
