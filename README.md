@@ -29,9 +29,16 @@ of `Teams.xlsx` verbatim.
   **COUNT** (headcount) rows, and 0-day months rendered as `-`.
 
 > **Capacity formula (per person, per month)**
-> `( MaxDays − Sickness − HolidayAllowance − AdminSC ) × Capacity × RampFactor − LoggedAbsences`,
-> floored at 0. A result of `0` means "not contributing", exactly as `0` is used
-> on the Replan H2 tab — and the COUNTIF headcount excludes those people.
+> First derive the net baseline from the assumptions block:
+> `Planable = WorkingDays − Sickness − Holiday − Admin/S&C` (e.g.
+> `21 − 1 − 2.5 − 2 = 15.5`). Then per person:
+> `Planable × ContractFactor × Capacity% × RampFactor − LoggedAbsences`,
+> floored at 0 and rounded to 1 dp.
+> ContractFactor: 5-day week (FT) = 1.0 (15.5), 4.5-day week = 0.9 (≈14),
+> 4-day week = 0.8 (12.4). A result of `0` means "not contributing", exactly as
+> on Replan H2. Example — a 4-day-week person at 50% capacity contributes
+> `15.5 × 0.8 × 0.5 = 6.2` days/month. The sidebar shows the derived Planable
+> days and the per-contract day totals (mirroring the assumptions block).
 
 ---
 
@@ -51,7 +58,24 @@ On first launch — **before** you configure Google Sheets — the app runs agai
 an in-session store seeded with the roster extracted from `Teams.xlsx`, so you
 can explore it immediately. The sidebar shows the active backend.
 
-## 3. Connect the Google Sheet (persistent storage)
+## 3. Saving & reopening your data
+
+The app **saves automatically to a durable local file** (`data/team.csv` and
+`data/holidays.csv` next to `app.py`) whenever you add a member, log an absence,
+or click **Save roster / Save absences**. When you reopen the app it reloads
+those saved values — no Google Sheets required. The sidebar shows where the
+local file lives.
+
+> On your own machine or a server with a persistent disk, the local file is all
+> you need. On **Streamlit Community Cloud** the local disk is wiped on every
+> restart/redeploy, so for durable cloud storage (and sharing across people)
+> connect a Google Sheet as below — saves then go to *both* the Sheet and the
+> local cache.
+
+To start the roster fresh, delete the `data/` folder (or the CSVs inside it);
+the app re-seeds from the bundled `Teams.xlsx` roster on next launch.
+
+## 4. Connect a Google Sheet (optional — shared / cloud storage)
 
 ### 3a. Create the Sheet
 Create a Google Sheet with **two tabs (worksheets)**, named exactly:
