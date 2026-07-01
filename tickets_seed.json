@@ -1,0 +1,452 @@
+[
+ {
+  "Ticket": "PM-3843",
+  "Summary": "5G voice call setup optimization",
+  "Status": "SWA Review",
+  "CSA Estimate": 20.0,
+  "Customer": "Telus",
+  "Adhoc or RM": "RM change",
+  "GO live blocker": true,
+  "Release": "4.x.x"
+ },
+ {
+  "Ticket": "PM-3932",
+  "Summary": "MMTEL API for Configuration Management",
+  "Status": "SWA Review",
+  "CSA Estimate": 25.0,
+  "Customer": "Telus",
+  "Adhoc or RM": "RM change",
+  "GO live blocker": true,
+  "Release": "4.x.x"
+ },
+ {
+  "Ticket": "PM-3959",
+  "Summary": "NA Hotline Feature",
+  "Status": "Under Development",
+  "CSA Estimate": 15.0,
+  "Customer": "Telus",
+  "Adhoc or RM": "RM change",
+  "GO live blocker": true,
+  "Release": "4.x.x"
+ },
+ {
+  "Ticket": "PM-3779",
+  "Summary": "Enhancement of CC-AS API for security",
+  "Status": "Under Development",
+  "CSA Estimate": 5.0,
+  "Customer": "Telus",
+  "Adhoc or RM": "Adhoc",
+  "GO live blocker": true,
+  "Release": "4.x.x"
+ },
+ {
+  "Ticket": "PM-3962",
+  "Summary": "Implement CDR File sequence number reset mechanism and padding",
+  "Status": "Code review by SWA",
+  "CSA Estimate": 15.0,
+  "Customer": "AT&T",
+  "Adhoc or RM": "Adhoc",
+  "GO live blocker": true,
+  "Release": "3.x.x"
+ },
+ {
+  "Ticket": "PM-3912",
+  "Summary": "Enhance the CC-AS API Usability",
+  "Status": "Code review by SWA",
+  "CSA Estimate": 20.0,
+  "Customer": "Telus",
+  "Adhoc or RM": "RM change",
+  "GO live blocker": true,
+  "Release": "4.x.x"
+ },
+ {
+  "Ticket": "PM-3604",
+  "Summary": "DRA SCTP INIT_ACK IP Address Filtering",
+  "Status": "SWA backlog",
+  "CSA Estimate": 10.0,
+  "Customer": "Roamability",
+  "Adhoc or RM": "RM change",
+  "GO live blocker": false,
+  "Release": "3.x.x"
+ },
+ {
+  "Ticket": "PM-3051",
+  "Summary": "P-CSCF : V-PLMN Specific Configurations for S8HR Roaming (IPsec & Emergency Calls)",
+  "Status": "SWA Backlog",
+  "CSA Estimate": 35.0,
+  "Customer": "Docomo",
+  "Adhoc or RM": "RM change",
+  "GO live blocker": true,
+  "Release": "4.x.x"
+ },
+ {
+  "Ticket": "PM-3958",
+  "Summary": "term-ioi/orig-ioi update in MMTel",
+  "Status": "Code review by SWA",
+  "CSA Estimate": 5.0,
+  "Customer": "JCI",
+  "Adhoc or RM": "Adhoc",
+  "GO live blocker": true,
+  "Release": "3.x.x"
+ },
+ {
+  "Ticket": "PM-3656",
+  "Summary": "SIP Manipulation for TELUS",
+  "Status": "Code review by SWA",
+  "CSA Estimate": 15.0,
+  "Customer": "Telus",
+  "Adhoc or RM": "Adhoc",
+  "GO live blocker": true,
+  "Release": "4.x.x"
+ },
+ {
+  "Ticket": "PM-3726",
+  "Summary": "AT&T Mexico CDR fields for Go-Live",
+  "Status": "Code review by SWA",
+  "CSA Estimate": 5.0,
+  "Customer": "AT&T",
+  "Adhoc or RM": "Adhoc",
+  "GO live blocker": true,
+  "Release": "3.x.x"
+ },
+ {
+  "Ticket": "PM-3929",
+  "Summary": "Missing CDR Fields needed for AT&T in MMTel Records",
+  "Status": "Code review by SWA",
+  "CSA Estimate": 10.0,
+  "Customer": "AT&T",
+  "Adhoc or RM": "Adhoc",
+  "GO live blocker": true,
+  "Release": "3.x.x"
+ },
+ {
+  "Ticket": "PM-3446",
+  "Summary": "Add X-Charging-Area from 302 redirect",
+  "Status": "Code review by SWA",
+  "CSA Estimate": 5.0,
+  "Customer": "JCI",
+  "Adhoc or RM": "RM item",
+  "GO live blocker": true,
+  "Release": "3.x.x"
+ },
+ {
+  "Ticket": "PM-2336",
+  "Summary": "Implement Fallback Mechanism for all diameter interfaces when connectivity between the DRA and diameter peer goes down",
+  "Status": "SWA Backlog",
+  "CSA Estimate": 30.0,
+  "Customer": "Product Gap",
+  "Adhoc or RM": "RM change",
+  "GO live blocker": false,
+  "Release": "4.x.x"
+ },
+ {
+  "Ticket": "PM-3936",
+  "Summary": "Minor update of PM-1813 to include original dialed number in the CDR",
+  "Status": "Code Review by SWA",
+  "CSA Estimate": 5.0,
+  "Customer": "Telus",
+  "Adhoc or RM": "Adhoc",
+  "GO live blocker": true,
+  "Release": "4.x.x"
+ },
+ {
+  "Ticket": "PM-3769",
+  "Summary": "Control Tower GUI enhancement for User related configurtion",
+  "Status": "Under Development",
+  "CSA Estimate": 5.0,
+  "Customer": "Orange",
+  "Adhoc or RM": "Adhoc",
+  "GO live blocker": false,
+  "Release": "3.x.x"
+ },
+ {
+  "Ticket": "PM-3893",
+  "Summary": "LICF  \u201cValueError: 'TIAS' is not a valid BandwidthType\u201d",
+  "Status": "Feature Acceptance",
+  "CSA Estimate": 10.0,
+  "Customer": "Telus",
+  "Adhoc or RM": "Adhoc",
+  "GO live blocker": true,
+  "Release": "4.x.x"
+ },
+ {
+  "Ticket": "PM-1857",
+  "Summary": "Missed Call Notification",
+  "Status": "SWA Review",
+  "CSA Estimate": 20.0,
+  "Customer": "JCI",
+  "Adhoc or RM": "RM item",
+  "GO live blocker": true,
+  "Release": "4.x.x"
+ },
+ {
+  "Ticket": "PM-3561",
+  "Summary": "Implement Multi-Interface Multus Support and Dynamic Routing for BGCF",
+  "Status": "Feature Acceptance",
+  "CSA Estimate": 40.0,
+  "Customer": "Orange",
+  "Adhoc or RM": "Adhoc",
+  "GO live blocker": false,
+  "Release": "3.x.x"
+ },
+ {
+  "Ticket": "PM-3970",
+  "Summary": "Per interface port configuration on DRA",
+  "Status": "To Do",
+  "CSA Estimate": 0.0,
+  "Customer": "Docomo",
+  "Adhoc or RM": "",
+  "GO live blocker": false,
+  "Release": ""
+ },
+ {
+  "Ticket": "PM-2654",
+  "Summary": "",
+  "Status": "",
+  "CSA Estimate": 0.0,
+  "Customer": "Docomo",
+  "Adhoc or RM": "",
+  "GO live blocker": false,
+  "Release": ""
+ },
+ {
+  "Ticket": "PM-973",
+  "Summary": "Introduce cumulative mechanism of subscribers counting with reset once a period",
+  "Status": "SWA Backlog",
+  "CSA Estimate": 20.0,
+  "Customer": "Internal",
+  "Adhoc or RM": "RM item",
+  "GO live blocker": false,
+  "Release": "3.x.x"
+ },
+ {
+  "Ticket": "PM-3053",
+  "Summary": "",
+  "Status": "",
+  "CSA Estimate": 0.0,
+  "Customer": "",
+  "Adhoc or RM": "",
+  "GO live blocker": false,
+  "Release": ""
+ },
+ {
+  "Ticket": "PM-2816",
+  "Summary": "",
+  "Status": "",
+  "CSA Estimate": 0.0,
+  "Customer": "",
+  "Adhoc or RM": "",
+  "GO live blocker": false,
+  "Release": ""
+ },
+ {
+  "Ticket": "PM-2336",
+  "Summary": "",
+  "Status": "",
+  "CSA Estimate": 0.0,
+  "Customer": "",
+  "Adhoc or RM": "",
+  "GO live blocker": false,
+  "Release": ""
+ },
+ {
+  "Ticket": "PM-3044",
+  "Summary": "",
+  "Status": "",
+  "CSA Estimate": 0.0,
+  "Customer": "",
+  "Adhoc or RM": "",
+  "GO live blocker": false,
+  "Release": ""
+ },
+ {
+  "Ticket": "PM-3047",
+  "Summary": "",
+  "Status": "",
+  "CSA Estimate": 0.0,
+  "Customer": "",
+  "Adhoc or RM": "",
+  "GO live blocker": false,
+  "Release": ""
+ },
+ {
+  "Ticket": "PM-2129",
+  "Summary": "Support for FA sequential ringing",
+  "Status": "SWA Review",
+  "CSA Estimate": 50.0,
+  "Customer": "Docomo",
+  "Adhoc or RM": "RM item",
+  "GO live blocker": true,
+  "Release": "4.x.x"
+ },
+ {
+  "Ticket": "PM-3032",
+  "Summary": "",
+  "Status": "",
+  "CSA Estimate": 0.0,
+  "Customer": "",
+  "Adhoc or RM": "",
+  "GO live blocker": false,
+  "Release": ""
+ },
+ {
+  "Ticket": "PM-4107",
+  "Summary": "",
+  "Status": "",
+  "CSA Estimate": 0.0,
+  "Customer": "",
+  "Adhoc or RM": "",
+  "GO live blocker": false,
+  "Release": ""
+ },
+ {
+  "Ticket": "PM-4372",
+  "Summary": "AT&T custom CDR field , behavior for non-completed calls.",
+  "Status": "SWA Backlog",
+  "CSA Estimate": 5.0,
+  "Customer": "AT&T",
+  "Adhoc or RM": "RM change",
+  "GO live blocker": false,
+  "Release": ""
+ },
+ {
+  "Ticket": "PM-4366",
+  "Summary": "",
+  "Status": "",
+  "CSA Estimate": 0.0,
+  "Customer": "AT&T",
+  "Adhoc or RM": "",
+  "GO live blocker": false,
+  "Release": ""
+ },
+ {
+  "Ticket": "PM-4347",
+  "Summary": "CC AS Phase-2 features",
+  "Status": "SWA Backlog",
+  "CSA Estimate": 15.0,
+  "Customer": "Telus",
+  "Adhoc or RM": "RM change",
+  "GO live blocker": true,
+  "Release": ""
+ },
+ {
+  "Ticket": "PM-4345",
+  "Summary": "",
+  "Status": "",
+  "CSA Estimate": 0.0,
+  "Customer": "AI Improvements",
+  "Adhoc or RM": "",
+  "GO live blocker": false,
+  "Release": ""
+ },
+ {
+  "Ticket": "PM-4336",
+  "Summary": "MRF to not strip PCV (P-Charging-Vector) and populate term-ioi",
+  "Status": "SWA backlog",
+  "CSA Estimate": 10.0,
+  "Customer": "JCI",
+  "Adhoc or RM": "RM change",
+  "GO live blocker": true,
+  "Release": ""
+ },
+ {
+  "Ticket": "PM-4335",
+  "Summary": "MRF to support preconditions when Required: preconditions present",
+  "Status": "SWA backlog",
+  "CSA Estimate": 15.0,
+  "Customer": "JCI",
+  "Adhoc or RM": "RM change",
+  "GO live blocker": true,
+  "Release": ""
+ },
+ {
+  "Ticket": "PM-4322",
+  "Summary": "DRA support for Destination Host Routing",
+  "Status": "SWA Backlog",
+  "CSA Estimate": 10.0,
+  "Customer": "AT&T",
+  "Adhoc or RM": "RM change",
+  "GO live blocker": false,
+  "Release": ""
+ },
+ {
+  "Ticket": "PM-4288",
+  "Summary": "MMTEL to support Diversion header for VM msg deposit",
+  "Status": "SWA Backlog",
+  "CSA Estimate": 5.0,
+  "Customer": "Telus",
+  "Adhoc or RM": "Adhoc",
+  "GO live blocker": true,
+  "Release": "4.x.x"
+ },
+ {
+  "Ticket": "PM-4260",
+  "Summary": "Implementation of participant removal mechanism from conference calls.",
+  "Status": "SWA Backlog",
+  "CSA Estimate": 10.0,
+  "Customer": "Telus",
+  "Adhoc or RM": "RM change",
+  "GO live blocker": true,
+  "Release": "4.x.x"
+ },
+ {
+  "Ticket": "PM-4247",
+  "Summary": "Further enhancement of SIP URI normalization",
+  "Status": "SWA Review",
+  "CSA Estimate": 5.0,
+  "Customer": "Telus",
+  "Adhoc or RM": "RM change",
+  "GO live blocker": true,
+  "Release": "4.x.x"
+ },
+ {
+  "Ticket": "PM-4214",
+  "Summary": "Millisecond granularity in CDRs (Rf)",
+  "Status": "SWA Backlog",
+  "CSA Estimate": 5.0,
+  "Customer": "JCI",
+  "Adhoc or RM": "RM change",
+  "GO live blocker": true,
+  "Release": "4.x.x"
+ },
+ {
+  "Ticket": "PM-4378",
+  "Summary": "Enabling S-CSCF to support UE reregistration",
+  "Status": "SWA Backlog",
+  "CSA Estimate": 10.0,
+  "Customer": "Telus",
+  "Adhoc or RM": "RM change",
+  "GO live blocker": true,
+  "Release": ""
+ },
+ {
+  "Ticket": "PM-4196",
+  "Summary": "P-CSCF Call Setup Must Fail When RTP Engine is Unavailable to Prevent P2P Media and / or silence calls",
+  "Status": "SWA Backlog",
+  "CSA Estimate": 15.0,
+  "Customer": "Enreach",
+  "Adhoc or RM": "RM change",
+  "GO live blocker": true,
+  "Release": ""
+ },
+ {
+  "Ticket": "PM-3745",
+  "Summary": "",
+  "Status": "",
+  "CSA Estimate": 0.0,
+  "Customer": "Docomo",
+  "Adhoc or RM": "",
+  "GO live blocker": false,
+  "Release": ""
+ },
+ {
+  "Ticket": "PM-4379",
+  "Summary": "T-ADS enhancement when no RATtype in UDA",
+  "Status": "SWA Backlog",
+  "CSA Estimate": 10.0,
+  "Customer": "Telus",
+  "Adhoc or RM": "RM change",
+  "GO live blocker": true,
+  "Release": ""
+ }
+]
